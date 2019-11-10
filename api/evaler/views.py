@@ -1,12 +1,13 @@
+
 import urllib
 
-from django.contrib.auth.models import User, Group
+import requests
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.utils import json
 
 from api.evaler.LufthansaAPI import NearestAirport
-from api.evaler.models import *
 from .serializers import *
 from django.conf import settings
 
@@ -52,11 +53,22 @@ def travelplan(request, *args, **kwargs):
     departuredate = event.end_time.date()
     start_route = localtransport(participant.city, startport)
     end_route = localtransport(endport, event.city)
-    return Response({'start':startport,'start-country':start_country,
-                     'end':endport,'end-country':end_country,
-                     'arrival':arrivaldate,'departure':departuredate,
-                     'start-route':start_route,
-                     'end-route':end_route})
+    currency = "EUR"
+    locale = "EN_US"
+    # token = str(requests.get(f"http://partners.api.skyscanner.net/apiservices/token/v2/gettoken?apiKey={settings.API_KEY_SKYSCALE}").content)
+    # print(token)
+
+
+    skystring = f'https://www.skyscanner.net/g/chiron/api/v1/flights/browse/browsequotes/v1.0/' \
+                f'RO/EUR/RO/OTP/BRE/2019-11-20/2019-11-21'
+    response = requests.get(url=skystring, headers={'Accept': 'application/json','api-key':settings.API_KEY_SKYSCALE})
+    # dec_resp = json.loads(response.content)
+    # return Response({'start':startport,'start-country':start_country,
+    #                  'end':endport,'end-country':end_country,
+    #                  'arrival':arrivaldate,'departure':departuredate,
+    #                  'start-route':start_route,
+    #                  'end-route':end_route})
+    return Response(response)
 
 
 def localtransport(start, end):
